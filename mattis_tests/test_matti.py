@@ -10,8 +10,16 @@ if __name__ == '__main__' and __package__ is None:
 
 import requests
 import pytest
+import unittest
 
-class MattiTestClass:
+class MattiTestClass(unittest.TestCase):
+
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        pass
+
     def test_one(self):
         x = "hello"
         assert 'h' in x
@@ -19,3 +27,6 @@ class MattiTestClass:
     def test_two(self):
         x = "hello"
         assert hasattr(x, 'check')
+
+if __name__ == '__main__':
+    unittest.main()
