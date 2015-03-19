@@ -12,21 +12,18 @@ import requests
 import pytest
 import unittest
 
-class MattiTestClass(unittest.TestCase):
+class HTTPMethodTestCase(unittest.TestCase):
 
-    def setUp(self):
-        pass
+    def test_simple_get(self):
+        r = requests.get("http://google.com")
+        assert r.status_code == 200
+        assert r.headers['content-type'] == 'text/html; charset=UTF-8'
 
-    def tearDown(self):
-        pass
-
-    def test_one(self):
-        x = "hello"
-        assert 'h' in x
-
-    def test_two(self):
-        x = "hello"
-        assert hasattr(x, 'check')
+    def test_simple_post(self):
+        payload = {'testkey':'testvalue'}
+        r = requests.post("http://httpbin.org/post", params=payload)
+        assert r.status_code == 200
+        assert "testkey" in r.text
 
 if __name__ == '__main__':
     unittest.main()
