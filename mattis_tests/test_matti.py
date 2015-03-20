@@ -40,7 +40,7 @@ class BasicHTTPMethodTestCase(unittest.TestCase):
         assert r.status_code == 200
 
 
-class CookiesTestCase(unittest.TestCase):
+class SessionsTestCase(unittest.TestCase):
 
     def test_setting_session_cookie(self):
         c = requests.session()
@@ -54,5 +54,19 @@ class CookiesTestCase(unittest.TestCase):
         with pytest.raises(KeyError):
             c.cookies['narsu'] == 'dasd'
 
+    def test_basic_session_auth(self):
+        auth = ('user', 'pass')
+        url = "http://httpbin.org/basic-auth/user/pass"
+        r = requests.get(url, auth=auth)
+        assert r.status_code == 200
+        r = requests.get(url)
+        assert r.status_code == 401
+
+    def test_digest_auth_session(self):
+        auth = requests.auth.HTTPDigestAuth('user', 'pass')
+        url = "http://httpbin.org/digest-auth/auth/user/pass"
+        c = requests.session()
+        c.get(url, auth=auth)
+        assert c.cookies['fake'] == 'fake_value'
 if __name__ == '__main__':
     unittest.main()
