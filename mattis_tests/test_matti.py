@@ -12,12 +12,12 @@ import requests
 import pytest
 import unittest
 
-class SimpleHTTPMethodTestCase(unittest.TestCase):
+class BasicHTTPMethodTestCase(unittest.TestCase):
 
     def test_simple_get(self):
         r = requests.get("http://httpbin.org/encoding/utf8")
         assert r.status_code == 200
-        assert r.headers['content-type'] == 'text/html; charset=UTF-8'
+        assert r.headers['content-type'] == 'text/html; charset=utf-8'
 
     def test_simple_post(self):
         payload = {'testkey':'testvalue'}
@@ -35,14 +35,23 @@ class SimpleHTTPMethodTestCase(unittest.TestCase):
         assert r.status_code == 200
         assert "testkey" in r.text
 
-    def test_simple_head(self):
-        r = requests.head("http://httpbin.org/head")
-        assert r.status_code == 200
-
     def test_simple_options(self):
         r = requests.options("http://httpbin.org/post")
         assert r.status_code == 200
 
+
+class CookiesTestCase(unittest.TestCase):
+
+    def test_setting_cookie(self):
+        c = requests.session()
+        c.get("http://httpbin.org/cookies/set?narsu=maa")
+        assert c.cookies['narsu'] == 'maa'
+
+    def test_removing_cookie(self):
+        c = requests.session()
+        c.get("http://httpbin.org/cookies/set?narsu=maa")
+        c.get("http://httpbin.org/cookies/delete?narsu")
+        assert c.cookies['narsu'] == ""
 
 if __name__ == '__main__':
     unittest.main()
