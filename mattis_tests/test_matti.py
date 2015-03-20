@@ -20,6 +20,8 @@ import os.path
 def pytest_report_header(config):
     return "Running Matti's request tests at " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 
+def get_path(filename):
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), filename)
 
 ## Basic tests for simple HTTP Verbs
 class BasicHTTPMethodTestCase(unittest.TestCase):
@@ -92,6 +94,10 @@ class ExceptionTestCase(unittest.TestCase):
         with pytest.raises(requests.exceptions.InvalidURL):
             requests.get('http://')
 
+    def test_bad_post_data(self):
+        with pytest.raises(TypeError):
+            requests.post("http://httpbin.org/post", file=['THIS IS  BAD DATA RIGHT HERE'])
+
     def test_invalid_domains_and_ports(self):
         with pytest.raises(requests.exceptions.ConnectionError):
             requests.get("http://hiiohoihalojatapaivaa.jamk.fi")
@@ -113,14 +119,28 @@ class FileHandlingTestCase(unittest.TestCase):
     def test_jpg_download(self):
         r = requests.get("http://httpbin.org/image/jpeg")
         image1 = Image.open(StringIO(r.content))
-        image2 = Image.open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "jpeg.jpg"))
+        image2 = Image.open(get_path("jpeg.jpg"))
         assert ImageChops.difference(image1, image2).getbbox() is None
 
     def test_png_download(self):
         r = requests.get("http://httpbin.org/image/png")
         image1 = Image.open(StringIO(r.content))
-        image2 = Image.open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "png.png"))
+        image2 = Image.open(get_path("png.png"))
         assert ImageChops.difference(image1, image2).getbbox() is None
+
+    def test_streamed_file_upload(self):
+        with open(get_path("png.png"), 'rb') as file:
+            r = requests.post("http://httpbin.org/post", data=file)
+            assert "application/octet-stream" in r.text
+            assert r.status_code == 200
+
+    def test_multipart_encoded_upload(self):
+        multiple_files = [('images', ('png.png', open(get_path('png.png'), 'rb'), 'image/png')),
+                      ('images', ('jpeg.jpg', open(get_path('jpeg.jpg'), 'rb'), 'image/jpeg'))]
+        r = requests.post("http://httpbin.org/post", files=multiple_files)
+        assert r.status_code == 200
+        assert "multipart/form-data" in r.request.headers['content-type']
+
 
 if __name__ == '__main__':
     unittest.main()
