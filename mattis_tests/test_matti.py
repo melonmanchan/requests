@@ -12,6 +12,10 @@ import requests
 import pytest
 import unittest
 
+from PIL import Image, ImageChops
+from StringIO import StringIO
+import os.path
+
 class BasicHTTPMethodTestCase(unittest.TestCase):
 
     def test_simple_get(self):
@@ -68,5 +72,48 @@ class SessionsTestCase(unittest.TestCase):
         c = requests.session()
         c.get(url, auth=auth)
         assert c.cookies['fake'] == 'fake_value'
+
+
+class ExceptionTestCase(unittest.TestCase):
+
+    def test_bad_urls(self):
+        with pytest.raises(requests.exceptions.MissingSchema):
+            requests.get("asdsadadsasfasfcxvcxv")
+
+        with pytest.raises(requests.exceptions.InvalidSchema):
+            requests.get("localhost:3124")
+
+        with pytest.raises(requests.exceptions.InvalidURL):
+            requests.get('http://')
+
+    def test_invalid_domains_and_ports(self):
+        with pytest.raises(requests.exceptions.ConnectionError):
+            requests.get("http://hiiohoihalojatapaivaa.jamk.fi")
+        with pytest.raises(requests.exceptions.ConnectionError):
+            requests.get("http://jamk.fi:1337", timeout=1)
+
+    def test_exception_rise(self):
+        bad_r = requests.get("http://httpbin.org/status/404")
+        with pytest.raises(requests.exceptions.HTTPError):
+            bad_r.raise_for_status()
+
+    def test_timeout(self):
+        with pytest.raises(requests.exceptions.Timeout):
+            requests.get("http://httpbin.org/delay/2", timeout=1)
+
+class FileHandlingTestCase(unittest.TestCase):
+
+    def test_jpg_download(self):
+        r = requests.get("http://httpbin.org/image/jpeg")
+        image1 = Image.open(StringIO(r.content))
+        image2 = Image.open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "jpeg.jpg"))
+        assert ImageChops.difference(image1, image2).getbbox() is None
+
+    def test_png_download(self):
+        r = requests.get("http://httpbin.org/image/png")
+        image1 = Image.open(StringIO(r.content))
+        image2 = Image.open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "png.png"))
+        assert ImageChops.difference(image1, image2).getbbox() is None
+        
 if __name__ == '__main__':
     unittest.main()
