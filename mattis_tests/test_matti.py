@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-""" Matti's testings for the python requests library. """
+""" Matti's test cases for the python requests library. """
 
 ## Some path hackery before importing so we can import the right requests module (the one from GitHub)
 if __name__ == '__main__' and __package__ is None:
@@ -11,10 +11,15 @@ if __name__ == '__main__' and __package__ is None:
 import requests
 import pytest
 import unittest
+import datetime
 
 from PIL import Image, ImageChops
 from StringIO import StringIO
 import os.path
+
+def pytest_report_header(config):
+    return "Running Matti's request tests at " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+
 
 ## Basic tests for simple HTTP Verbs
 class BasicHTTPMethodTestCase(unittest.TestCase):
