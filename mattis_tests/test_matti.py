@@ -24,7 +24,7 @@ def get_path(filename):
     return os.path.join(os.path.dirname(os.path.abspath(__file__)), filename)
 
 ## Basic tests for simple HTTP Verbs
-class BasicHTTPMethodTestCase(unittest.TestCase):
+class BasicHTTPApiTestCase(unittest.TestCase):
 
     def test_simple_get(self):
         r = requests.get("http://httpbin.org/encoding/utf8")
@@ -140,6 +140,31 @@ class FileHandlingTestCase(unittest.TestCase):
         r = requests.post("http://httpbin.org/post", files=multiple_files)
         assert r.status_code == 200
         assert "multipart/form-data" in r.request.headers['content-type']
+
+""" Tests for Requests library utility functions """
+class RequestUtilityTestCase(unittest.TestCase):
+
+    def test_requote_uri(self):
+        quotedUri = "http://hiihoi.com/asd?buz=%25fizz"
+        assert quotedUri == requests.utils.requote_uri(quotedUri)
+
+    def test_get_encoding_from_headers(self):
+        r = requests.get("http://httpbin.org/encoding/utf8")
+        assert "utf-8" in requests.utils.get_encoding_from_headers(r.headers)
+
+    def test_for_ipv4(self):
+        assert requests.utils.is_ipv4_address('1.2.3.4')
+        assert not requests.utils.is_ipv4_address('1.2.3.4.5')
+
+    def test_address_in_network(self):
+        assert requests.utils.address_in_network('192.168.1.1', '192.168.1.0/24')
+        assert not requests.utils.address_in_network('192.168.1.1', '192.168.100.0/24')
+
+    def test_dotted_netmask(self):
+        assert requests.utils.dotted_netmask(24) == "255.255.255.0"
+
+    def test_get_auth_from_url(self):
+        assert ('username', 'password') == requests.utils.get_auth_from_url('http://username:password@complex.url.com/path?query=yes')
 
 
 if __name__ == '__main__':
