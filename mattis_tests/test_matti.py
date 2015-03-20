@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""Matti's testings for the python requests library."""
+""" Matti's testings for the python requests library. """
 
-## Some path hackery before importing so we can import the right file
+## Some path hackery before importing so we can import the right requests module (the one from GitHub)
 if __name__ == '__main__' and __package__ is None:
     from os import sys, path
     sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
@@ -16,6 +16,7 @@ from PIL import Image, ImageChops
 from StringIO import StringIO
 import os.path
 
+## Basic tests for simple HTTP Verbs
 class BasicHTTPMethodTestCase(unittest.TestCase):
 
     def test_simple_get(self):
@@ -43,7 +44,7 @@ class BasicHTTPMethodTestCase(unittest.TestCase):
         r = requests.options("http://httpbin.org/post")
         assert r.status_code == 200
 
-
+""" Some session- and cookie-based tests """
 class SessionsTestCase(unittest.TestCase):
 
     def test_setting_session_cookie(self):
@@ -73,7 +74,7 @@ class SessionsTestCase(unittest.TestCase):
         c.get(url, auth=auth)
         assert c.cookies['fake'] == 'fake_value'
 
-
+""" Testing different exceptions """
 class ExceptionTestCase(unittest.TestCase):
 
     def test_bad_urls(self):
@@ -101,6 +102,7 @@ class ExceptionTestCase(unittest.TestCase):
         with pytest.raises(requests.exceptions.Timeout):
             requests.get("http://httpbin.org/delay/2", timeout=1)
 
+""" Testing download and upload of images, with help from Pillow """
 class FileHandlingTestCase(unittest.TestCase):
 
     def test_jpg_download(self):
@@ -114,6 +116,6 @@ class FileHandlingTestCase(unittest.TestCase):
         image1 = Image.open(StringIO(r.content))
         image2 = Image.open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "png.png"))
         assert ImageChops.difference(image1, image2).getbbox() is None
-        
+
 if __name__ == '__main__':
     unittest.main()
