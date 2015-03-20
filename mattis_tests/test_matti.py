@@ -42,16 +42,17 @@ class BasicHTTPMethodTestCase(unittest.TestCase):
 
 class CookiesTestCase(unittest.TestCase):
 
-    def test_setting_cookie(self):
+    def test_setting_session_cookie(self):
         c = requests.session()
         c.get("http://httpbin.org/cookies/set?narsu=maa")
         assert c.cookies['narsu'] == 'maa'
 
-    def test_removing_cookie(self):
+    def test_removing_session_cookie(self):
         c = requests.session()
         c.get("http://httpbin.org/cookies/set?narsu=maa")
         c.get("http://httpbin.org/cookies/delete?narsu")
-        assert c.cookies['narsu'] == ""
+        with pytest.raises(KeyError):
+            c.cookies['narsu'] == 'dasd'
 
 if __name__ == '__main__':
     unittest.main()
